@@ -1,0 +1,14 @@
+{
+    "name": "14code/trello-webhooks-wrapper",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "David Hoppe",
+            "email": "dh@davidhoppe.de"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "cdaguerre/php-trello-api": "@dev"
+    }
+}
