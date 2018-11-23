@@ -8,7 +8,7 @@ require ".config";
 $client = new Client();
 $client->authenticate($key, $token, Client::AUTH_URL_CLIENT_ID);
 
-$boards = $client->api('boards')->all();
+$boards = $client->api('member')->boards()->all();
 //$boards = $client->api('boards')->lists()->all($boardId);
 
 foreach ($boards as $board) {
