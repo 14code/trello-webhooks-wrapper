@@ -3,3 +3,6 @@ composer.phar
 .idea
 .config
 .ddev
+/src/
+/bin/
+.phpunit.result.cache

@@ -1,17 +1,13 @@
 <?php
-require "vendor/autoload.php";
+namespace Webhooks\Wrapper;
 
-use Trello\Client;
+set_include_path('..');
+
+require "vendor/autoload.php";
 
 require ".config";
 
-$client = new Client();
-$client->authenticate($key, $token, Client::AUTH_URL_CLIENT_ID);
+$trello = new Trello($key, $token);
+$models = $trello->listModels();
 
-$boards = $client->api('member')->boards()->all();
-//$boards = $client->api('boards')->lists()->all($boardId);
-
-foreach ($boards as $board) {
-    print_r($board);
-}
-
+print_r($models);

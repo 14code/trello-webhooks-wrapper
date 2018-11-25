@@ -7,8 +7,20 @@
             "email": "dh@davidhoppe.de"
         }
     ],
+    "autoload": {
+        "psr-4": {
+            "": "src/",
+            "Webhooks\\Wrapper\\": "lib/"
+        }
+    },
+    "config": {
+        "bin-dir": "bin"
+    },
     "minimum-stability": "dev",
     "require": {
         "cdaguerre/php-trello-api": "@dev"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.0@dev"
     }
 }
