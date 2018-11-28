@@ -26,13 +26,54 @@ class Trello
         return $this->client;
     }
 
-    public function listModels()
+    public function getTeams()
+    {
+        $teams = [];
+        $client = $this->getClient();
+
+        $result = $client->api('member')->organizations()->all('me');
+
+        foreach ($result as $entry) {
+            $team = new Model($entry['displayName'], $entry['id'], 'team');
+            $teams[] = $team;
+        }
+
+        return $teams;
+    }
+
+    public function getBoards()
+    {
+        $boards = [];
+        $client = $this->getClient();
+
+        $result = $client->api('member')->organizations()->all('me');
+
+        foreach ($result as $entry) {
+            $board = new Model($entry['displayName'], $entry['id'], 'team');
+            $boards[] = $board;
+        }
+
+        return $boards;
+    }
+
+    public function getLists()
+    {
+        return [];
+    }
+
+    public function getCards()
+    {
+        return [];
+    }
+
+    public function getModels()
     {
         $models = [];
         $client = $this->getClient();
 
         // teams
         $teams = $client->api('member')->organizations()->all('me');
+
         //print_r($teams);
         foreach ($teams as $team) {
             $model = new Model($team['displayName'], $team['id'], 'team');
