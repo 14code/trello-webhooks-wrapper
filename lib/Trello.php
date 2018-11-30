@@ -8,7 +8,7 @@
 
 namespace Webhooks\Wrapper;
 
-use Trello\Client;
+use \Webhooks\Wrapper\Trello\Client;
 
 class Trello
 {
@@ -41,16 +41,23 @@ class Trello
         return $teams;
     }
 
-    public function getBoards()
+    public function getBoards(Model $team)
     {
         $boards = [];
         $client = $this->getClient();
 
-        $result = $client->api('member')->organizations()->all('me');
+        //$result = $client->api('member')->boards()->all();
+        //$result = $client->api('member')->boards()->filter($team->getId(), ['organization']);
+        //$result = $client->api('organization')->boards()->filter($team->getId());
+        $test = $client->api('organization');
+        $result = $client->api('organization')->boards()->all($team->getId());
+        //print_r($result);
 
         foreach ($result as $entry) {
-            $board = new Model($entry['displayName'], $entry['id'], 'team');
+            $board = new Model($entry['name'], $entry['id'], 'board', $entry['idOrganization']);
+            print_r($board);
             $boards[] = $board;
+            //break;
         }
 
         return $boards;
@@ -58,37 +65,8 @@ class Trello
 
     public function getLists()
     {
-        return [];
-    }
-
-    public function getCards()
-    {
-        return [];
-    }
-
-    public function getModels()
-    {
-        $models = [];
-        $client = $this->getClient();
-
-        // teams
-        $teams = $client->api('member')->organizations()->all('me');
-
-        //print_r($teams);
-        foreach ($teams as $team) {
-            $model = new Model($team['displayName'], $team['id'], 'team');
-            $models[] = $model;
-        }
-
-        /*
-        $boards = $client->api('member')->boards()->all();
-        foreach ($boards as $board) {
-            $model = new Model($board['name'], $board['id'], 'board');
-            $models[] = $model;
-        }
-        */
-
-        return $models;
+        $lists = [];
+        return $lists;
     }
 
 }
