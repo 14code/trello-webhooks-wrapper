@@ -2,7 +2,6 @@
 require "vendor/autoload.php";
 
 use \Webhooks\Wrapper\Trello;
-use \Webhooks\Wrapper\Model;
 
 class TrelloTest extends \PHPUnit\Framework\TestCase
 {
