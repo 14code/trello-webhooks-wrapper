@@ -26,6 +26,16 @@ class Trello
         return $this->client;
     }
 
+    public function getTeam($id)
+    {
+        $client = $this->getClient();
+
+        $result = $client->api('organizations')->show($id);
+        $team = new Model($result['displayName'], $result['id'], 'team');
+
+        return $team;
+    }
+
     public function getTeams()
     {
         $teams = [];
@@ -41,31 +51,53 @@ class Trello
         return $teams;
     }
 
+    public function getBoard($id)
+    {
+        $client = $this->getClient();
+
+        $result = $client->api('boards')->show($id);
+        $board = new Model($result['name'], $result['id'], 'board');
+
+        return $board;
+    }
+
     public function getBoards(Model $team)
     {
         $boards = [];
         $client = $this->getClient();
 
-        //$result = $client->api('member')->boards()->all();
-        //$result = $client->api('member')->boards()->filter($team->getId(), ['organization']);
-        //$result = $client->api('organization')->boards()->filter($team->getId());
-        $test = $client->api('organization');
         $result = $client->api('organization')->boards()->all($team->getId());
-        //print_r($result);
 
         foreach ($result as $entry) {
             $board = new Model($entry['name'], $entry['id'], 'board', $entry['idOrganization']);
-            print_r($board);
             $boards[] = $board;
-            //break;
         }
 
         return $boards;
     }
 
-    public function getLists()
+    public function getList($id)
+    {
+        $client = $this->getClient();
+
+        $result = $client->api('lists')->show($id);
+        $list = new Model($result['name'], $result['id'], 'list');
+
+        return $list;
+    }
+
+    public function getLists(Model $board)
     {
         $lists = [];
+        $client = $this->getClient();
+
+        $result = $client->api('boards')->lists()->all($board->getId());
+
+        foreach ($result as $entry) {
+            $list = new Model($entry['name'], $entry['id'], 'list', $entry['idBoard']);
+            $lists[] = $list;
+        }
+
         return $lists;
     }
 

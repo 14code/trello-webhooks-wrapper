@@ -12,19 +12,35 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
 
     public function init($msg = "")
     {
-        if (null == $this->trello)
-        require ".config";
-        $this->trello = new \Webhooks\Wrapper\Trello($key, $token);
+        if (null == $this->trello) {
+            require ".config";
+            $this->trello = new \Webhooks\Wrapper\Trello($key, $token);
+        }
     }
 
-    protected function setUp(): void
+    public function teamIdProvider()
     {
+        return [['5c004b2157cb628ef3fd9362']];
     }
 
+    /**
+     * @dataProvider teamIdProvider
+     */
+    public function testGetTeam($id)
+    {
+        $this->init();
+        $trello = $this->trello;
+        $team = $trello->getTeam($id);
+        $this->assertInstanceOf("Webhooks\Wrapper\Model", $team, "Only Model object required");
+        $this->assertEquals("team", $team->getType(), "Model should be of type team");
+        $this->assertEquals($id, $team->getId(), "Model should have Id $id");
+        $this->assertNotEmpty($team->getId(), "Every Model should have an ID");
+        $this->assertNotEmpty($team->getName(), "Every Model should have a name");
+    }
 
     public function teamsProvider()
     {
-        $this->init("provider");
+        $this->init();
         $trello = $this->trello;
         $data = $trello->getTeams();
         $return = [];
@@ -34,19 +50,16 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
         return $return;
     }
 
-    public function testGetTeams()
+    public function selectTestTeamProvider()
     {
         $this->init();
         $trello = $this->trello;
-        $this->assertIsArray($trello->getTeams(), "Should return array");
-    }
-
-    /**
-     * @dataProvider teamsProvider
-     */
-    public function testTest()
-    {
-        $this->assertTrue(true);
+        $teams = $trello->getTeams();
+        foreach ($teams as $team) {
+            if ("Test" == $team->getName()) {
+                return $team;
+            }
+        }
     }
 
     /**
@@ -61,23 +74,50 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
         $this->assertNotEmpty($model->getName(), "Every Model should have a name");
     }
 
+    public function boardIdProvider()
+    {
+        return [['5c004b2d62caae0be7f315a1']];
+    }
+
+    /**
+     * @dataProvider boardIdProvider
+     */
+    public function testGetBoard($id)
+    {
+        $this->init();
+        $trello = $this->trello;
+        $board = $trello->getBoard($id);
+        $this->assertInstanceOf("Webhooks\Wrapper\Model", $board, "Only Model object required");
+        $this->assertEquals("board", $board->getType(), "Model should be of type board");
+        $this->assertEquals($id, $board->getId(), "Model should have Id $id");
+        $this->assertNotEmpty($board->getId(), "Every Model should have an ID");
+        $this->assertNotEmpty($board->getName(), "Every Model should have a name");
+    }
+
     public function boardsProvider()
     {
         $this->init();
         $trello = $this->trello;
-        $teams = $trello->getTeams();
-        foreach ($teams as $team) {
-            if ("Test" == $team->getName()) {
-                break;
-            }
-            $team = null;
-        }
+        $team = $this->selectTestTeamProvider();
         $data = $trello->getBoards($team);
         $return = [];
         foreach ($data as $model) {
             $return[] = [$team, $model];
         }
         return $return;
+    }
+
+    public function selectTestBoardProvider()
+    {
+        $this->init();
+        $trello = $this->trello;
+        $team = $this->selectTestTeamProvider();
+        $boards = $trello->getBoards($team);
+        foreach ($boards as $board) {
+            if ("Test" == $board->getName()) {
+                return $board;
+            }
+        }
     }
 
     /**
@@ -94,21 +134,37 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
         $this->assertNotEmpty($model->getName(), "Every Model should have a name");
     }
 
-    public function testGetLists()
+    public function listIdProvider()
+    {
+        return [['5c004b344928b30c0359b44e']];
+    }
+
+    /**
+     * @dataProvider listIdProvider
+     */
+    public function testGetList($id)
     {
         $this->init();
         $trello = $this->trello;
-        $this->assertIsArray($trello->getLists(), "Should return array");
+        $list = $trello->getList($id);
+        $this->assertInstanceOf("Webhooks\Wrapper\Model", $list, "Only Model object required");
+        $this->assertEquals("list", $list->getType(), "Model should be of type list");
+        $this->assertEquals($id, $list->getId(), "Model should have Id $id");
+        $this->assertNotEmpty($list->getId(), "Every Model should have an ID");
+        $this->assertNotEmpty($list->getName(), "Every Model should have a name");
     }
 
     public function listsProvider()
     {
         $this->init();
         $trello = $this->trello;
-        $data = $trello->getLists();
-        $list = new Model("Testlist", md5("testlist"), 'list');
-        array_push($data, $list);
-        return [ $data ];
+        $board = $this->selectTestBoardProvider();
+        $data = $trello->getLists($board);
+        $return = [];
+        foreach ($data as $model) {
+            $return[] = [$model];
+        }
+        return $return;
     }
 
     /**
