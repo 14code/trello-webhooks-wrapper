@@ -17,18 +17,26 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
         }
     }
 
+    public function testInit()
+    {
+        require ".config";
+        $trello = new \Webhooks\Wrapper\Trello($key, $token);
+        $this->assertTrue(true);
+        return $trello;
+    }
+
     public function teamIdProvider()
     {
         return [['5c004b2157cb628ef3fd9362']];
     }
 
     /**
+     * @depends testInit
      * @dataProvider teamIdProvider
      */
-    public function testGetTeam($id)
+    public function testGetTeam()
     {
-        $this->init();
-        $trello = $this->trello;
+        list($id, $trello) = func_get_args();
         $team = $trello->getTeam($id);
         $this->assertInstanceOf("Webhooks\Wrapper\Model", $team, "Only Model object required");
         $this->assertEquals("team", $team->getType(), "Model should be of type team");
@@ -62,6 +70,7 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @depends testInit
      * @dataProvider teamsProvider
      */
     public function testGetTeamsReturnedModels($model)

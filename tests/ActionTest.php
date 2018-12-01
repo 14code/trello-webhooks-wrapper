@@ -12,10 +12,35 @@ use \Webhooks\Wrapper\Action;
 
 class ActionTest extends \PHPUnit\Framework\TestCase
 {
-    public function testObject()
+    protected $action;
+
+    public function setUp(): void
     {
-        $object = new Action();
-        $this->assertIsObject($object,"Has to be an object.");
+    }
+
+    public function testCreateAction()
+    {
+        $action = new Action("return");
+        $action->setName('Returns the string \'Executed\'');
+        $this->assertTrue(true);
+        return $action;
+    }
+
+    /**
+     * @depends testCreateAction
+     */
+    public function testGetName($action)
+    {
+        $this->assertEquals("Returns the string 'Executed'", $action->getName());
+    }
+
+    /**
+     * @depends testCreateAction
+     */
+    public function testSetName($action)
+    {
+        $action->setName("New name");
+        $this->assertEquals("New name", $action->getName());
     }
 
 }
