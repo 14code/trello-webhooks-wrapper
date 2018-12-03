@@ -2,6 +2,7 @@
 require "vendor/autoload.php";
 
 use \Webhooks\Wrapper\Trello;
+use \Webhooks\Wrapper\Trello\Client;
 
 class TrelloTest extends \PHPUnit\Framework\TestCase
 {
@@ -13,14 +14,18 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
     {
         if (null == $this->trello) {
             require ".config";
-            $this->trello = new \Webhooks\Wrapper\Trello($key, $token);
+            $client = new Client();
+            $client->authenticate($key, $token, Client::AUTH_URL_CLIENT_ID);
+            $this->trello = new \Webhooks\Wrapper\Trello($client);
         }
     }
 
     public function testInit()
     {
         require ".config";
-        $trello = new \Webhooks\Wrapper\Trello($key, $token);
+        $client = new Client();
+        $client->authenticate($key, $token, Client::AUTH_URL_CLIENT_ID);
+        $trello = new \Webhooks\Wrapper\Trello($client);
         $this->assertTrue(true);
         return $trello;
     }

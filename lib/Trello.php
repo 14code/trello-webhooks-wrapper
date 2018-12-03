@@ -14,10 +14,8 @@ class Trello
 {
     private $client;
 
-    public function __construct($key, $token)
+    public function __construct(Client $client)
     {
-        $client = new Client();
-        $client->authenticate($key, $token, Client::AUTH_URL_CLIENT_ID);
         $this->client = $client;
     }
 

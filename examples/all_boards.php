@@ -7,7 +7,10 @@ require "vendor/autoload.php";
 
 require ".config";
 
-$trello = new Trello($key, $token);
+$client = new Trello\Client();
+$client->authenticate($key, $token, Client::AUTH_URL_CLIENT_ID);
+
+$trello = new Trello($client);
 $models = $trello->getTeams();
 
 print_r($models);
