@@ -6,6 +6,7 @@
  * Version: ___VERSION___
  */
 
+use Webhooks\Wrapper\Action;
 use Webhooks\Wrapper\Webhook;
 use PHPUnit\Framework\TestCase;
 
@@ -15,14 +16,25 @@ class WebhookTest extends TestCase
 
     public function setUp(): void
     {
-        $this->webhook = new Webhook();
-        $this->markTestSkipped('Have to do this test');
+        $webhook = new Webhook();
+        $webhook->setAction(new Action("mock"));
+        $webhook->setHandle('move-to-mock');
+        $webhook->setId('123456789');
+        $webhook->setModel(new \Webhooks\Wrapper\Model('Mock Model', '123456789', 'mock'));
+        $this->webhook = $webhook;
+    }
+
+    public function testGetHandle()
+    {
+        $webhook = $this->webhook;
+        $this->assertEquals('move-to-mock', $webhook->getHandle());
     }
 
     public function testSetHandle()
     {
         $webhook = $this->webhook;
-        $this->markTestSkipped('Have to do this test');
+        $webhook->setHandle('test-the-handle');
+        $this->assertEquals('test-the-handle', $webhook->getHandle());
     }
 
     public function testSetAction()
@@ -56,12 +68,6 @@ class WebhookTest extends TestCase
     }
 
     public function testGetId()
-    {
-        $webhook = $this->webhook;
-        $this->markTestSkipped('Have to do this test');
-    }
-
-    public function testGetHandle()
     {
         $webhook = $this->webhook;
         $this->markTestSkipped('Have to do this test');
