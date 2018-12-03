@@ -28,7 +28,7 @@ class Webhook
      * @param mixed $action
      * @return Webhook
      */
-    public function setAction($action)
+    public function setAction(Action $action)
     {
         $this->action = $action;
         return $this;

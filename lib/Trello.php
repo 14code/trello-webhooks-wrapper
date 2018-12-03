@@ -101,7 +101,7 @@ class Trello
         return $lists;
     }
 
-    public function registerWebhook(Webhook)
+    public function registerWebhook(Webhook $webhook)
     {
     }
 

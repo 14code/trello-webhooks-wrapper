@@ -14,6 +14,7 @@ class Action
     private $name = '';
     private $type = '';
     private $target;
+    private $function;
 
     /**
      * Action constructor.
@@ -71,5 +72,27 @@ class Action
     public function setTarget(Model $target): void
     {
         $this->target = $target;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFunction()
+    {
+        return $this->function;
+    }
+
+    /**
+     * @param mixed $function
+     */
+    public function setFunction(\Closure $function): void
+    {
+        $this->function = $function;
+    }
+
+    public function execute()
+    {
+        $function = $this->getFunction();
+        return $function();
     }
 }
