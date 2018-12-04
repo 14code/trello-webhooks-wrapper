@@ -2,6 +2,7 @@
 require "vendor/autoload.php";
 
 use \Webhooks\Wrapper\Trello;
+use \Webhooks\Wrapper\Model;
 use \Webhooks\Wrapper\Trello\Client;
 
 class TrelloTest extends \PHPUnit\Framework\TestCase
@@ -10,30 +11,95 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
     protected static $trelloI;
 
 
-    public function init($msg = "")
-    {
-        if (null == $this->trello) {
-            require ".config";
-            $client = new Client();
-            $client->authenticate($key, $token, Client::AUTH_URL_CLIENT_ID);
-            $this->trello = new \Webhooks\Wrapper\Trello($client);
-        }
-    }
-
     public function testInit()
     {
-        require ".config";
-        $client = new Client();
-        $client->authenticate($key, $token, Client::AUTH_URL_CLIENT_ID);
-        $trello = new \Webhooks\Wrapper\Trello($client);
+        //require ".config";
+        //$test = new Client();
+        //$apiResultClass = get_class($test->api('organizations'));
+        //fwrite(STDERR, print_r($test->api('organizations'), TRUE));
+        //$client->authenticate($key, $token, Client::AUTH_URL_CLIENT_ID);
+        //fwrite(STDERR, print_r($clientMock->api('organizations'), TRUE));
+
+
+        //$clientStub = $this->createMock(Client::class);
+
+        //$clientStub->method('api')
+            //->will($this->returnValue($apiResultMock));
+
+        $clientMock = $this->getMockBuilder(Client::class)
+            ->setMethods(['api'])
+            ->getMock();
+
+        //$clientMock->expects($this->any())
+            //->method('api')
+            //->with($this->equalTo('member'))
+            //->will($this->returnValue($apiMemberResultMock));
+
+        $clientMock->expects($this->any())
+            ->method('api')
+            ->with($this->logicalOr(
+                $this->equalTo('boards'),
+                $this->equalTo('lists'),
+                $this->equalTo('organizations'),
+                $this->equalTo('member')
+            ))
+            ->will($this->returnCallback([$this, 'apiReturnCallback']));
+        //->will($this->returnValue($apiOrganizationResultMock));
+
+        $trello = new \Webhooks\Wrapper\Trello($clientMock);
+
         $this->assertTrue(true);
         return $trello;
     }
+
+    public function apiReturnCallback($api)
+    {
+        switch ($api) {
+            case 'organizations':
+                $apiOrganizationResultMock = $this->createMock(Trello\Api\Organization::class);
+                $apiOrganizationResultMock->method('show')
+                    ->will($this->returnValue([
+                        'id' => '5c004b2157cb628ef3fd9362',
+                        'displayName' => 'Test',
+                        'name' => 'Test']));
+                return $apiOrganizationResultMock;
+            case 'member';
+                $apiMemberResultMock = $this->createMock(\Trello\Api\Member::class);
+                $apiMemberResultMock->method('organizations')
+                    ->will($this->returnValue([]));
+                return $apiMemberResultMock;
+            case 'boards';
+                $apiBoardResultMock = $this->createMock(\Trello\Api\Board::class);
+                $apiBoardResultMock->method('show')
+                    ->will($this->returnValue([
+                        'id' => '5c004b2d62caae0be7f315a1',
+                        'displayName' => 'Test',
+                        'name' => 'Test']));
+
+                $apiListResultMock = $this->createMock(\Trello\Api\Board\Cardlists::class);
+                $apiListResultMock->method('all')
+                    ->will($this->returnValue([]));
+
+                $apiBoardResultMock->method('lists')
+                    ->will($this->returnValue($apiListResultMock));
+                return $apiBoardResultMock;
+            case 'lists';
+                $apiListResultMock = $this->createMock(\Trello\Api\Cardlist::class);
+                $apiListResultMock->method('show')
+                    ->will($this->returnValue([
+                        'id' => '5c004b344928b30c0359b44e',
+                        'displayName' => 'Test',
+                        'name' => 'Test']));
+                return $apiListResultMock;
+        }
+    }
+
 
     public function teamIdProvider()
     {
         return [['5c004b2157cb628ef3fd9362']];
     }
+
 
     /**
      * @depends testInit
@@ -52,20 +118,24 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
 
     public function teamsProvider()
     {
-        $this->init();
-        $trello = $this->trello;
-        $data = $trello->getTeams();
+        //$trello = $this->testInit();
+        //$data = $trello->getTeams();
         $return = [];
-        foreach ($data as $tmp) {
-            $return[] = [$tmp];
-        }
+        //foreach ($data as $tmp) {
+            //$return[] = [$tmp];
+        //}
+        $return[] = [new Model(
+            'Test team', 'test123456', 'team'
+        )];
         return $return;
     }
 
     public function selectTestTeamProvider()
     {
-        $this->init();
-        $trello = $this->trello;
+        return  new Model(
+            'Test team', 'test123456', 'team'
+        );
+        $trello = $this->testInit();
         $teams = $trello->getTeams();
         foreach ($teams as $team) {
             if ("Test" == $team->getName()) {
@@ -97,8 +167,7 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
      */
     public function testGetBoard($id)
     {
-        $this->init();
-        $trello = $this->trello;
+        $trello = $this->testInit();
         $board = $trello->getBoard($id);
         $this->assertInstanceOf("Webhooks\Wrapper\Model", $board, "Only Model object required");
         $this->assertEquals("board", $board->getType(), "Model should be of type board");
@@ -109,8 +178,13 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
 
     public function boardsProvider()
     {
-        $this->init();
-        $trello = $this->trello;
+        $team = $this->selectTestTeamProvider();
+        return [[$team, new Model(
+            'Test board', 'test123456', 'board', $team->getId()
+        )]];
+
+        $this->testInit();
+        $trello = $this->testInit();
         $team = $this->selectTestTeamProvider();
         $data = $trello->getBoards($team);
         $return = [];
@@ -122,8 +196,11 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
 
     public function selectTestBoardProvider()
     {
-        $this->init();
-        $trello = $this->trello;
+        return  new Model(
+            'Test board', 'test123456', 'board'
+        );
+        $this->testInit();
+        $trello = $this->testInit();
         $team = $this->selectTestTeamProvider();
         $boards = $trello->getBoards($team);
         foreach ($boards as $board) {
@@ -157,8 +234,8 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
      */
     public function testGetList($id)
     {
-        $this->init();
-        $trello = $this->trello;
+        $this->testInit();
+        $trello = $this->testInit();
         $list = $trello->getList($id);
         $this->assertInstanceOf("Webhooks\Wrapper\Model", $list, "Only Model object required");
         $this->assertEquals("list", $list->getType(), "Model should be of type list");
@@ -169,8 +246,8 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
 
     public function listsProvider()
     {
-        $this->init();
-        $trello = $this->trello;
+        $this->testInit();
+        $trello = $this->testInit();
         $board = $this->selectTestBoardProvider();
         $data = $trello->getLists($board);
         $return = [];
