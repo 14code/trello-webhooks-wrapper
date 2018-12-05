@@ -13,27 +13,9 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
 
     public function testInit()
     {
-        //require ".config";
-        //$test = new Client();
-        //$apiResultClass = get_class($test->api('organizations'));
-        //fwrite(STDERR, print_r($test->api('organizations'), TRUE));
-        //$client->authenticate($key, $token, Client::AUTH_URL_CLIENT_ID);
-        //fwrite(STDERR, print_r($clientMock->api('organizations'), TRUE));
-
-
-        //$clientStub = $this->createMock(Client::class);
-
-        //$clientStub->method('api')
-            //->will($this->returnValue($apiResultMock));
-
         $clientMock = $this->getMockBuilder(Client::class)
             ->setMethods(['api'])
             ->getMock();
-
-        //$clientMock->expects($this->any())
-            //->method('api')
-            //->with($this->equalTo('member'))
-            //->will($this->returnValue($apiMemberResultMock));
 
         $clientMock->expects($this->any())
             ->method('api')
@@ -44,7 +26,6 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
                 $this->equalTo('member')
             ))
             ->will($this->returnCallback([$this, 'apiReturnCallback']));
-        //->will($this->returnValue($apiOrganizationResultMock));
 
         $trello = new \Webhooks\Wrapper\Trello($clientMock);
 
@@ -94,6 +75,71 @@ class TrelloTest extends \PHPUnit\Framework\TestCase
         }
     }
 
+
+    public function apiResultsProvider()
+    {
+        $return = [];
+
+        // fullsize
+        array_push($return, [[
+            'id' => 'all123456789',
+            'displayName' => 'Test item',
+            'name' => 'Test item',
+            'idBoard' => 'board123456789',
+            'idOrganization' => 'team123456789'
+        ]]);
+
+        //$team = new Model($entry['displayName'], $entry['id'], 'team');
+        array_push($return, [[
+            'id' => 'item123456789',
+            'displayName' => 'Test result',
+        ]]);
+
+        //$board = new Model($entry['name'], $entry['id'], 'board', $entry['idOrganization']);
+        array_push($return, [[
+                'id' => 'board123456789',
+                'name' => 'Test result',
+                'idOrganization' => 'team123456789'
+        ]]);
+
+        //$list = new Model($entry['name'], $entry['id'], 'list', $entry['idBoard']);
+        array_push($return, [[
+            'id' => 'list123456789',
+            'name' => 'Test result',
+            'idBoard' => 'board123456789',
+        ]]);
+
+        return $return;
+    }
+
+    /**
+     * @dataProvider apiResultsProvider
+     */
+    public function testMapApiResult($result)
+    {
+        $trello = $this->testInit();
+        $model = $trello->mapApiResult($result);
+
+        $fields = array_keys($model);
+        sort($fields);
+        $fields = array_diff($fields, ['parent']);
+        $this->assertEquals('idnametype', implode('', $fields));
+    }
+
+    public function testIncompleteApiResult()
+    {
+        $this->expectException(\Exception::class);
+
+        $trello = $this->testInit();
+        $model = $trello->mapApiResult([
+            'name' => 'Test result',
+        ]);
+
+        $fields = array_keys($model);
+        sort($fields);
+        $fields = array_diff($fields, ['parent']);
+        $this->assertEquals('idnametype', implode('', $fields));
+    }
 
     public function teamIdProvider()
     {

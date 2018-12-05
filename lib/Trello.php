@@ -8,6 +8,7 @@
 
 namespace Webhooks\Wrapper;
 
+use http\Exception;
 use \Webhooks\Wrapper\Trello\Client;
 
 class Trello
@@ -97,6 +98,58 @@ class Trello
         }
 
         return $lists;
+    }
+
+    public function apiResultFields()
+    {
+        return [
+            'id',
+            'displayName',
+            'name',
+            'idOrganization',
+            'idBoard'
+        ];
+    }
+
+    public function mapApiResult($result)
+    {
+        $resultFields = $this->apiResultFields();
+        $map = [
+            'displayName' => 'name',
+            'idOrganization' => 'parent',
+            'idBoard' => 'parent'
+        ];
+        $modelFields = [
+            'id',
+            'name',
+            'type',
+            'parent'
+        ];
+        $return = [];
+        foreach ($resultFields as $field) {
+            if (in_array($field, $modelFields) && isset($result[$field])) {
+                $return[$field] = $result[$field];
+            }
+            if (isset($map[$field]) && isset($result[$field])) {
+                $return[$map[$field]] = $result[$field];
+            }
+        }
+
+        $type = 'team';
+        if (isset($result['idOrganization']) && !empty($result['idOrganization'])) {
+            $type = 'board';
+        }
+        if (isset($result['idBoard']) && !empty($result['idBoard'])) {
+            $type = 'list';
+        }
+        $return['type'] = $type;
+
+        if (!isset($return['id']) || !isset($return['name'])) {
+            throw new \Exception('Invalid result format');
+        }
+
+        return $return;
+
     }
 
     public function registerWebhook(Webhook $webhook)
