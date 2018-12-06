@@ -16,9 +16,13 @@ class WebhookTest extends TestCase
 
     public function setUp(): void
     {
-        $webhook = new Webhook();
+        $trelloMock = $this->getMockBuilder(\Webhooks\Wrapper\Trello::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $webhook = new Webhook($trelloMock);
         $webhook->setAction(new Action("mock"));
-        $webhook->setHandle('move-to-mock');
+        $webhook->setToken('move-to-mock');
         $webhook->setId('123456789');
         $webhook->setModel(new \Webhooks\Wrapper\Model('Mock Model', '123456789', 'mock'));
         $this->webhook = $webhook;
@@ -27,14 +31,14 @@ class WebhookTest extends TestCase
     public function testGetHandle()
     {
         $webhook = $this->webhook;
-        $this->assertEquals('move-to-mock', $webhook->getHandle());
+        $this->assertEquals('move-to-mock', $webhook->getToken());
     }
 
     public function testSetHandle()
     {
         $webhook = $this->webhook;
-        $webhook->setHandle('test-the-handle');
-        $this->assertEquals('test-the-handle', $webhook->getHandle());
+        $webhook->setToken('test-the-token');
+        $this->assertEquals('test-the-token', $webhook->getToken());
     }
 
     public function testSetAction()

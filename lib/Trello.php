@@ -11,7 +11,7 @@ namespace Webhooks\Wrapper;
 use http\Exception;
 use \Webhooks\Wrapper\Trello\Client;
 
-class Trello
+class Trello extends Wrapper
 {
     private $client;
 
@@ -48,6 +48,28 @@ class Trello
         }
 
         return $teams;
+    }
+
+    public function getWebhooks($token)
+    {
+        $webhooks = [];
+        $client = $this->getClient();
+        $result = $client->api('tokens')->webhooks()->all($token);
+
+        foreach ($result as $webhook) {
+            $webhooks[] = $webhook;
+        }
+
+        return $webhooks;
+    }
+
+    public function getWebhook($id)
+    {
+        $webhooks = [];
+        $client = $this->getClient();
+        $result = $client->api('webhook')->show($id);
+
+        return $result;
     }
 
     public function getBoard($id)

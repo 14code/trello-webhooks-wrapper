@@ -9,12 +9,63 @@
 namespace Webhooks\Wrapper;
 
 
+use Webhooks\Wrapper\Wrapper;
+
 class Webhook
 {
-    private $action;
     private $id;
+    private $active = true;
+    private $wrapper;
+    private $description = '';
+    private $token;
+    private $url;
     private $model;
-    private $handle;
+    private $action;
+
+    /**
+     * Webhook constructor.
+     */
+    public function __construct(Wrapper $wrapper)
+    {
+        $this->wrapper = $wrapper;
+        $this->id = md5(time());
+    }
+
+    /**
+     * @return bool
+     */
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
+
+    /**
+     * @param bool $active
+     * @return Webhook
+     */
+    public function setActive(bool $active): Webhook
+    {
+        $this->active = $active;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    /**
+     * @param string $description
+     * @return Webhook
+     */
+    public function setDescription(string $description): Webhook
+    {
+        $this->description = $description;
+        return $this;
+    }
 
     /**
      * @return mixed
@@ -31,6 +82,42 @@ class Webhook
     public function setAction(Action $action)
     {
         $this->action = $action;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getWrapper()
+    {
+        return $this->wrapper;
+    }
+
+    /**
+     * @param mixed $wrapper
+     * @return Webhook
+     */
+    public function setWrapper($wrapper)
+    {
+        $this->wrapper = $wrapper;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUrl()
+    {
+        return $this->url;
+    }
+
+    /**
+     * @param mixed $url
+     * @return Webhook
+     */
+    public function setUrl($url)
+    {
+        $this->url = $url;
         return $this;
     }
 
@@ -73,18 +160,18 @@ class Webhook
     /**
      * @return mixed
      */
-    public function getHandle()
+    public function getToken()
     {
-        return $this->handle;
+        return $this->token;
     }
 
     /**
-     * @param mixed $handle
+     * @param mixed $token
      * @return Webhook
      */
-    public function setHandle($handle)
+    public function setToken($token)
     {
-        $this->handle = $handle;
+        $this->token = $token;
         return $this;
     }
 
