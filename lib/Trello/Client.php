@@ -9,6 +9,8 @@
 namespace Webhooks\Wrapper\Trello;
 
 
+use Trello\Api\ApiInterface;
+
 class Client extends \Trello\Client
 {
 
