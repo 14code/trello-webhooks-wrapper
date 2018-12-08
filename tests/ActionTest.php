@@ -6,8 +6,6 @@
  * Version: ___VERSION___
  */
 
-require "vendor/autoload.php";
-
 use \Webhooks\Wrapper\Action;
 
 class ActionTest extends \PHPUnit\Framework\TestCase
@@ -22,7 +20,8 @@ class ActionTest extends \PHPUnit\Framework\TestCase
     {
         $action = new Action("return");
         $action->setName('Returns the string \'Executed\'');
-        $action->setFunction(function() {return 'Executed';});
+        $action->addArgument('return', 'Executed');
+        $action->setFunction(function($return) {return $return;});
         $this->assertTrue(true);
         return $action;
     }

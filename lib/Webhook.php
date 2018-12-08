@@ -9,14 +9,14 @@
 namespace Webhooks\Wrapper;
 
 
-use Webhooks\Wrapper\Wrapper;
+use Webhooks\Wrapper\Service;
 
 class Webhook
 {
     private $id;
     private $active = true;
-    private $wrapper;
     private $description = '';
+    private $service;
     private $token;
     private $url;
     private $model;
@@ -25,9 +25,9 @@ class Webhook
     /**
      * Webhook constructor.
      */
-    public function __construct(Wrapper $wrapper)
+    public function __construct(Service $service)
     {
-        $this->wrapper = $wrapper;
+        $this->service = $service;
         $this->id = md5(time());
     }
 
@@ -81,6 +81,7 @@ class Webhook
      */
     public function setAction(Action $action)
     {
+        $action->setWebhook($this);
         $this->action = $action;
         return $this;
     }
@@ -88,18 +89,18 @@ class Webhook
     /**
      * @return mixed
      */
-    public function getWrapper()
+    public function getService()
     {
-        return $this->wrapper;
+        return $this->service;
     }
 
     /**
-     * @param mixed $wrapper
+     * @param mixed $service
      * @return Webhook
      */
-    public function setWrapper($wrapper)
+    public function setService($service)
     {
-        $this->wrapper = $wrapper;
+        $this->service = $service;
         return $this;
     }
 
@@ -175,4 +176,67 @@ class Webhook
         return $this;
     }
 
+    /**
+     * @return Webhook
+     */
+    public function existsOnService()
+    {
+        $token = $this->getToken();
+        try {
+            $this->service->getWebhook($token);
+        } catch (\Trello\Exception\RuntimeException $e) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @return Webhook
+     */
+    public function pullFromService()
+    {
+        if ($this->existsOnService()) {
+            $token = $this->getToken();
+            $webhook = $this->service->getWebhook($token);
+            $this->setActive($webhook['active']);
+            $this->setModel($webhook['idModel']);
+            $this->setDescription($webhook['description']);
+            $this->setUrl($webhook['callbackURL']);
+        }
+        return $this;
+    }
+
+    /**
+     * @return Webhook
+     */
+    public function pushToService()
+    {
+        if ($this->existsOnService()) {
+            $token = $this->getToken();
+            $parameters = [
+                'active' => $this->isActive(),
+                'idModel' => $this->getModel(),
+                'description' => $this->getDescription(),
+                'callbackURL' => $this->getUrl()
+
+            ];
+            $webhook = $this->service->updateWebhook($token, $parameters);
+        }
+    }
+
+    public function run($json)
+    {
+        if ($this->isActive() && is_object($this->action)
+                && ($this->action instanceof Action)) {
+
+            $posted = json_decode($json);
+            if (isset($posted->action->display->translationKey)) {
+                $actionType = $posted->action->display->translationKey;
+                if ($actionType == $this->action->getType()) {
+                    return $this->action->execute($posted->action->data);
+                }
+            }
+
+        }
+    }
 }

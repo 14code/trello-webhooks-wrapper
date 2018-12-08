@@ -16,11 +16,18 @@ class WebhookTest extends TestCase
 
     public function setUp(): void
     {
-        $trelloMock = $this->getMockBuilder(\Webhooks\Wrapper\Trello::class)
+        $serviceMock = $this->getMockBuilder(\Webhooks\Wrapper\Trello::class)
             ->disableOriginalConstructor()
+            ->setMethods(['getWebhook'])
             ->getMock();
 
-        $webhook = new Webhook($trelloMock);
+        $serviceMock->expects($this->any())
+            ->method('getWebhook')
+            ->with($this->equalTo('test-the-token'))
+            ->will($this->returnValue(['active' => true, 'idModel' => 'id-from-service',
+                'description' => 'description from service', 'callbackURL' => 'url-from-service']));
+
+        $webhook = new Webhook($serviceMock);
         $webhook->setAction(new Action("mock"));
         $webhook->setToken('move-to-mock');
         $webhook->setId('123456789');
@@ -28,58 +35,29 @@ class WebhookTest extends TestCase
         $this->webhook = $webhook;
     }
 
-    public function testGetHandle()
+    public function testGetToken()
     {
         $webhook = $this->webhook;
         $this->assertEquals('move-to-mock', $webhook->getToken());
     }
 
-    public function testSetHandle()
+    public function testSetToken()
     {
         $webhook = $this->webhook;
         $webhook->setToken('test-the-token');
         $this->assertEquals('test-the-token', $webhook->getToken());
+        return $webhook;
     }
 
-    public function testSetAction()
+    /**
+     * @depends testSetToken
+     */
+    public function testPullFromService($webhook)
     {
-        $webhook = $this->webhook;
-        $this->markTestSkipped('Have to do this test');
+        //$webhook = $this->webhook;
+        $webhook->pullFromService();
+        $this->assertEquals('description from service', $webhook->getDescription());
+
     }
 
-    public function testSetModel()
-    {
-        $webhook = $this->webhook;
-        $this->markTestSkipped('Have to do this test');
-    }
-
-    public function testGetModel()
-    {
-        $webhook = $this->webhook;
-        $this->markTestSkipped('Have to do this test');
-    }
-
-    public function testSetId()
-    {
-        $webhook = $this->webhook;
-        $this->markTestSkipped('Have to do this test');
-    }
-
-    public function testGetAction()
-    {
-        $webhook = $this->webhook;
-        $this->markTestSkipped('Have to do this test');
-    }
-
-    public function testGetId()
-    {
-        $webhook = $this->webhook;
-        $this->markTestSkipped('Have to do this test');
-    }
-
-    public function testGetUrl()
-    {
-        $webhook = $this->webhook;
-        $this->markTestSkipped('Have to do this test');
-    }
 }

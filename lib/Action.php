@@ -8,13 +8,13 @@
 
 namespace Webhooks\Wrapper;
 
-
 class Action
 {
     private $name = '';
     private $type = '';
-    private $target;
+    private $arguments = [];
     private $function;
+    private $webhook;
 
     /**
      * Action constructor.
@@ -24,6 +24,24 @@ class Action
     public function __construct(string $type)
     {
         $this->type = $type;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getWebhook()
+    {
+        return $this->webhook;
+    }
+
+    /**
+     * @param mixed $webhook
+     * @return Action
+     */
+    public function setWebhook(Webhook $webhook)
+    {
+        $this->webhook = $webhook;
+        return $this;
     }
 
     /**
@@ -37,9 +55,10 @@ class Action
     /**
      * @param string $name
      */
-    public function setName(string $name): void
+    public function setName(string $name): Action
     {
         $this->name = $name;
+        return $this;
     }
 
     /**
@@ -53,25 +72,37 @@ class Action
     /**
      * @param string $type
      */
-    public function setType(string $type): void
+    public function setType(string $type): Action
     {
         $this->type = $type;
+        return $this;
     }
 
     /**
      * @return mixed
      */
-    public function getTarget()
+    public function getArguments(): array
     {
-        return $this->target;
+        return $this->arguments;
     }
 
     /**
-     * @param mixed $target
+     * @param mixed $arguments
      */
-    public function setTarget(Model $target): void
+    public function setArguments(array $arguments): Action
     {
-        $this->target = $target;
+        $this->arguments = $arguments;
+        return $this;
+    }
+
+    /**
+     * @param string $argumentName
+     * @param void $argumentValue
+     */
+    public function addArgument(string $argumentName, $argumentValue): Action
+    {
+        $this->arguments[$argumentName] = $argumentValue;
+        return $this;
     }
 
     /**
@@ -85,14 +116,18 @@ class Action
     /**
      * @param mixed $function
      */
-    public function setFunction(\Closure $function): void
+    public function setFunction(\Closure $function): Action
     {
         $this->function = $function;
+        return $this;
     }
 
-    public function execute()
+    public function execute($posted = null)
     {
         $function = $this->getFunction();
-        return $function();
+        $arguments = $this->getArguments();
+        $arguments['data'] = $posted;
+        $arguments['this'] = $this;
+        return call_user_func_array($function, $arguments);
     }
 }
