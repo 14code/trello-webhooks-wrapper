@@ -17,17 +17,17 @@ $trello = new Trello($client);
 $webhook = new Webhook($trello);
 $webhook->setModel($updateWebhookModelId);
 
+$webhook->addCondition(function($webhook, $posted) {
+    return 'action_move_card_from_list_to_list' == $posted->action->display->translationKey;
+});
+$webhook->addCondition(function($webhook, $posted) {
+    return $webhook->getModel() == $posted->action->data->listAfter->id;
+});
+
 $action = new Action("action_move_card_from_list_to_list");
-$action->setName('Returns the string \'Executed\'');
-$action->addArgument('return', 'Executed');
-$action->setFunction(function($return, $data, $action) {
-    print_r($data);
-    if ($action->getWebhook()->getModel() == $data->listBefore->id) {
-        return 'Moved away';
-    }
-    if ($action->getWebhook()->getModel() == $data->listAfter->id) {
-        return 'Moved here';
-    }
+
+$action->setFunction(function($data) {
+    $return = 'Moved card with id ' . $data->card->id . ' to list with id ' . $data->listAfter->id;
     return $return;
 });
 

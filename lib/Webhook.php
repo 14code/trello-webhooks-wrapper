@@ -21,6 +21,7 @@ class Webhook
     private $url;
     private $model;
     private $action;
+    private $conditions = [];
 
     /**
      * Webhook constructor.
@@ -46,6 +47,34 @@ class Webhook
     public function setActive(bool $active): Webhook
     {
         $this->active = $active;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getConditions(): array
+    {
+        return $this->conditions;
+    }
+
+    /**
+     * @param array $conditions
+     * @return Webhook
+     */
+    public function setConditions(array $conditions): Webhook
+    {
+        $this->conditions = $conditions;
+        return $this;
+    }
+
+    /**
+     * @param array $conditions
+     * @return Webhook
+     */
+    public function addCondition($condition): Webhook
+    {
+        array_push($this->conditions, $condition);
         return $this;
     }
 
@@ -81,7 +110,6 @@ class Webhook
      */
     public function setAction(Action $action)
     {
-        $action->setWebhook($this);
         $this->action = $action;
         return $this;
     }
@@ -224,17 +252,37 @@ class Webhook
         }
     }
 
+    public function verifyModel($modelData)
+    {
+        if ($modelData->id == $this->getModel()) {
+            return true;
+        }
+        return false;
+    }
+
+    public function verify($posted)
+    {
+        $model = $posted->model;
+        if ($this->verifyModel($model)) {
+            foreach ($this->getConditions() as $condition) {
+                if (!call_user_func_array($condition, [$this, $posted])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
     public function run($json)
     {
         if ($this->isActive() && is_object($this->action)
                 && ($this->action instanceof Action)) {
 
             $posted = json_decode($json);
-            if (isset($posted->action->display->translationKey)) {
-                $actionType = $posted->action->display->translationKey;
-                if ($actionType == $this->action->getType()) {
-                    return $this->action->execute($posted->action->data);
-                }
+            if ($this->verify($posted)) {
+                $action = $posted->action;
+                return $this->action->execute($action->data);
             }
 
         }

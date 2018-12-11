@@ -54,7 +54,6 @@ class WebhookTest extends TestCase
      */
     public function testPullFromService($webhook)
     {
-        //$webhook = $this->webhook;
         $webhook->pullFromService();
         $this->assertEquals('description from service', $webhook->getDescription());
 

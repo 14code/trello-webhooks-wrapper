@@ -14,7 +14,6 @@ class Action
     private $type = '';
     private $arguments = [];
     private $function;
-    private $webhook;
 
     /**
      * Action constructor.
@@ -25,25 +24,6 @@ class Action
     {
         $this->type = $type;
     }
-
-    /**
-     * @return mixed
-     */
-    public function getWebhook()
-    {
-        return $this->webhook;
-    }
-
-    /**
-     * @param mixed $webhook
-     * @return Action
-     */
-    public function setWebhook(Webhook $webhook)
-    {
-        $this->webhook = $webhook;
-        return $this;
-    }
-
     /**
      * @return string
      */
@@ -129,5 +109,13 @@ class Action
         $arguments['data'] = $posted;
         $arguments['this'] = $this;
         return call_user_func_array($function, $arguments);
+    }
+
+    public function verify($actionData)
+    {
+        if ($this->getType() == $actionData->display->translationKey) {
+            return true;
+        }
+        return false;
     }
 }
