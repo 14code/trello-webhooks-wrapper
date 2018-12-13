@@ -28,7 +28,7 @@ class WebhookTest extends TestCase
                 'description' => 'description from service', 'callbackURL' => 'url-from-service']));
 
         $webhook = new Webhook($serviceMock);
-        $webhook->setAction(new Action("mock"));
+        $webhook->setAction(new Action());
         $webhook->setToken('move-to-mock');
         $webhook->setId('123456789');
         $webhook->setModel(new \Webhooks\Wrapper\Model('Mock Model', '123456789', 'mock'));

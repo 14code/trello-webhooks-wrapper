@@ -17,14 +17,14 @@ $trello = new Trello($client);
 $webhook = new Webhook($trello);
 $webhook->setModel($updateWebhookModelId);
 
-$webhook->addCondition(function($webhook, $posted) {
+$webhook->addCondition(function($me, $posted) {
     return 'action_move_card_from_list_to_list' == $posted->action->display->translationKey;
 });
-$webhook->addCondition(function($webhook, $posted) {
-    return $webhook->getModel() == $posted->action->data->listAfter->id;
+$webhook->addCondition(function($me, $posted) {
+    return $me->getModel() == $posted->action->data->listAfter->id;
 });
 
-$action = new Action("action_move_card_from_list_to_list");
+$action = new Action();
 
 $action->setFunction(function($data) {
     $return = 'Moved card with id ' . $data->card->id . ' to list with id ' . $data->listAfter->id;

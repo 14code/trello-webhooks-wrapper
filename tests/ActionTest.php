@@ -18,10 +18,8 @@ class ActionTest extends \PHPUnit\Framework\TestCase
 
     public function testCreateAction()
     {
-        $action = new Action("return");
-        $action->setName('Returns the string \'Executed\'');
-        $action->addArgument('return', 'Executed');
-        $action->setFunction(function($return) {return $return;});
+        $action = new Action();
+        $action->setFunction(function($data, $me) {return $data['return'];});
         $this->assertTrue(true);
         return $action;
     }
@@ -29,26 +27,9 @@ class ActionTest extends \PHPUnit\Framework\TestCase
     /**
      * @depends testCreateAction
      */
-    public function testGetName($action)
-    {
-        $this->assertEquals("Returns the string 'Executed'", $action->getName());
-    }
-
-    /**
-     * @depends testCreateAction
-     */
-    public function testSetName($action)
-    {
-        $action->setName("New name");
-        $this->assertEquals("New name", $action->getName());
-    }
-
-    /**
-     * @depends testCreateAction
-     */
     public function testExecute($action)
     {
-        $this->assertEquals("Executed", $action->execute());
+        $this->assertEquals('Executed', $action->execute([ 'return' => 'Executed']));
     }
 
     /**
@@ -66,10 +47,10 @@ class ActionTest extends \PHPUnit\Framework\TestCase
     public function testSetFunction($action)
     {
         $action->setFunction(function() {
-            return "New function";
+            return 'New function';
         });
         $function = $action->getFunction();
-        $this->assertEquals("New function", $action->execute());
+        $this->assertEquals('New function', $action->execute());
     }
 
 }

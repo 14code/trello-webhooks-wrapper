@@ -10,52 +10,14 @@ namespace Webhooks\Wrapper;
 
 class Action
 {
-    private $name = '';
-    private $type = '';
     private $arguments = [];
     private $function;
 
     /**
      * Action constructor.
-     * @param string $name
-     * @param string $type
      */
-    public function __construct(string $type)
+    public function __construct()
     {
-        $this->type = $type;
-    }
-    /**
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    /**
-     * @param string $name
-     */
-    public function setName(string $name): Action
-    {
-        $this->name = $name;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getType(): string
-    {
-        return $this->type;
-    }
-
-    /**
-     * @param string $type
-     */
-    public function setType(string $type): Action
-    {
-        $this->type = $type;
-        return $this;
     }
 
     /**
@@ -105,17 +67,10 @@ class Action
     public function execute($posted = null)
     {
         $function = $this->getFunction();
-        $arguments = $this->getArguments();
+        $arguments = [];
         $arguments['data'] = $posted;
         $arguments['this'] = $this;
         return call_user_func_array($function, $arguments);
     }
 
-    public function verify($actionData)
-    {
-        if ($this->getType() == $actionData->display->translationKey) {
-            return true;
-        }
-        return false;
-    }
 }
